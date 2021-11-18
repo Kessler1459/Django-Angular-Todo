@@ -1,11 +1,9 @@
 from django.http.response import HttpResponseForbidden, HttpResponseNotFound
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.middleware.csrf import get_token
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.core import serializers
 import json
 from todo.models import *
 # Create your views here.
@@ -58,6 +56,12 @@ def get_auth_user_view(request: HttpRequest):
         return JsonResponse({'isAuthenticated': False})
     return JsonResponse({'username': request.user.username})
 
+
+@require_http_methods(['POST'])
+def email_exists_view(request: HttpRequest):
+    exists =User.objects.filter(email=json.loads(request.body)['email']).exists()
+    return JsonResponse({'exists': str(exists).lower()})
+
 # ----------------BOARD---------------------
 
 
@@ -84,87 +88,92 @@ def boards_from_owner(request: HttpRequest, owner_id: int):
 
 @require_http_methods(['POST', 'GET'])
 def columns_view(request: HttpRequest, board_id: int):
-    try:
-        board = Board.objects.get(id=board_id)
-    except ObjectDoesNotExist:
+    board = Board.objects.filter(id=board_id).first()
+    if board is None:
         return HttpResponseNotFound()
-    is_guest = Board.objects.filter(id=board.id, guests__exact=request.user).exists()
-    if request.user.id != board.owner.id and not is_guest:
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        req = json.loads(request.body)
-        Column.objects.create(name=req['name'], board=board)
-        return JsonResponse({'detail': 'Column created'}, status=201)
-    elif request.method == 'GET':
-        columns = Column.objects.filter(board=board)
-        status = 200 if columns.count() > 0 else 204
-        return JsonResponse(list(columns.values("id", "name")), safe=False, status=status)
+    else:
+        is_guest = Board.objects.filter(
+            id=board.id, guests__exact=request.user).exists()
+        if request.user.id != board.owner.id and not is_guest:
+            return HttpResponseForbidden()
+        else:    
+            if request.method == 'POST':
+                req = json.loads(request.body)
+                Column.objects.create(name=req['name'], board=board)
+                return JsonResponse({'detail': 'Column created'}, status=201)
+            elif request.method == 'GET':
+                columns = Column.objects.filter(board=board)
+                status = 200 if columns.count() > 0 else 204
+                return JsonResponse(list(columns.values("id", "name")), safe=False, status=status)
+
 
 @require_http_methods(['PUT', 'DELETE'])
 def edit_columns_view(request: HttpRequest, column_id: int):
-    try:
-        column=Column.objects.get(id=column_id)
-        is_guest = Board.objects.filter(id=column.board.id, guests__exact=request.user).exists()
+    column = Column.objects.filter(id=column_id).first()
+    if column is None:
+        return HttpResponseNotFound()
+    else:
+        is_guest = Board.objects.filter(
+            id=column.board.id, guests__exact=request.user).exists()
         if request.user.id != column.board.owner.id and not is_guest:
             return HttpResponseForbidden()
-        if request.method == 'PUT':
-            req = json.loads(request.body)
-            column.name=req['name']
-            column.save()
-            return JsonResponse({'id':column.id,'name':column.name},status=200)
-        elif request.method == 'DELETE':
-            column.delete()
-            return JsonResponse({'detail':'Column deleted'},status=200)
-    except ObjectDoesNotExist:
-        return HttpResponseForbidden()
-    
+        else:
+            if request.method == 'PUT':
+                req = json.loads(request.body)
+                column.name = req['name']
+                column.save()
+                return JsonResponse({'id': column.id, 'name': column.name}, status=200)
+            elif request.method == 'DELETE':
+                column.delete()
+                return JsonResponse({'detail': 'Column deleted'}, status=200)
+
 
 # ----------------NOTES--------------------------------------------------
 @require_http_methods(['POST', 'GET'])
 def notes_view(request: HttpRequest, column_id: int):
-    try:
-        column = Column.objects.get(id=column_id)
-    except ObjectDoesNotExist:
+    column = Column.objects.filter(id=column_id).first()
+    if column is None:
         return HttpResponseNotFound()
-    is_guest = Board.objects.filter(
-        id=column.board.id, guests__exact=request.user).exists()
-    if not is_guest and request.user.id == column.board.owner.id:
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        req = json.loads(request.body)
-        note = Note(name=req['name'],
-                    description=req['description'], column=column, creator=request.user)
-        note.save()
-        return JsonResponse({'detail': 'Note created'}, status=201)
-    elif request.method == 'GET':
-        notes = Note.objects.filter(column=column)
-        status = 200 if notes.count() > 0 else 204
-        return JsonResponse(list(notes.values("id", "name", "state", "description", "category", "column")), safe=False, status=status)
+    else:
+        is_guest = Board.objects.filter(
+            id=column.board.id, guests__exact=request.user).exists()
+        if not is_guest and request.user.id == column.board.owner.id:
+            return HttpResponseForbidden()
+        else:
+            if request.method == 'POST':
+                req = json.loads(request.body)
+                note = Note(name=req['name'],
+                            description=req['description'], column=column, creator=request.user)
+                note.save()
+                return JsonResponse({'detail': 'Note created'}, status=201)
+            elif request.method == 'GET':
+                notes = Note.objects.filter(column=column)
+                status = 200 if notes.count() > 0 else 204
+                return JsonResponse(list(notes.values("id", "name", "state", "description", "category", "column")), safe=False, status=status)
 
 
 @require_http_methods(['PUT', 'DELETE'])
 def edit_note_view(request: HttpRequest, note_id: int):
-    user = request.user
-    try:
-        note = Note.objects.get(id=note_id)
-        is_guest = Board.objects.filter(id=note.column.board.id, guests__exact=user).exists()
+    note = Note.objects.filter(id=note_id).first()
+    if note is None:
+        return HttpResponseNotFound()
+    else:
+        user = request.user
+        is_guest = Board.objects.filter(
+            id=note.column.board.id, guests__exact=user).exists()
         if not is_guest and user.id == note.column.board.owner.id:
             return HttpResponseForbidden()
-        if request.method == 'PUT':
-            req = json.loads(request.body)
-            column = note.column if req['column'] == note.column.id else Column.objects.get(id=req['column'])
-            note.name = req['name']
-            note.description = req['description']
-            note.state = req['state']
-            note.column = column
-            note.save()
-            return JsonResponse({'id':note.id,'name': note.name, 'description': note.description, 'column': note.column.id, 'state': note.state, 'creator': note.creator.id}, status=200)
-        elif request.method == 'DELETE':
-            note.delete()
-            return JsonResponse({'detail':'Note deleted'},status=200)
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound()
-    
-    
-        
-    
+        else:
+            if request.method == 'PUT':
+                req = json.loads(request.body)
+                column = note.column if req['column'] == note.column.id else Column.objects.get(
+                    id=req['column'])
+                note.name = req['name']
+                note.description = req['description']
+                note.state = req['state']
+                note.column = column
+                note.save()
+                return JsonResponse({'id': note.id, 'name': note.name, 'description': note.description, 'column': note.column.id, 'state': note.state, 'creator': note.creator.id}, status=200)
+            elif request.method == 'DELETE':
+                note.delete()
+                return JsonResponse({'detail': 'Note deleted'}, status=200)
