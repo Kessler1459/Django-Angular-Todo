@@ -1,0 +1,16 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+$color-blue-light:rgb(164, 213, 255);
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.container{
+    margin-left: 9vw;
+    margin-right: 9vw;
+}
+
+.accept{
+    background-color:$color-blue-light;
+}

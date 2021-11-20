@@ -1,0 +1,30 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="standard">
+        <mat-label>Username</mat-label>
+        <input type="username" autocomplete="username" matInput formControlName="username" placeholder="Username">
+        <mat-error *ngIf="form.controls.username.dirty && form.controls.username.errors?.['required']">Username required
+        </mat-error>
+        <mat-error *ngIf="form.controls.username.dirty && form.controls.username.errors?.['minlength']">Must be at
+            least 5 characters</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>Email</mat-label>
+        <input type="email" autocomplete="email" matInput formControlName="email" placeholder="Email">
+        <mat-error *ngIf="form.controls.email.dirty && form.controls.email.errors?.['required']">Email required
+        </mat-error>
+        <mat-error *ngIf="form.controls.email.dirty && form.controls.email.errors?.['email']">Must be an email
+        </mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="standard">
+        <mat-label>Password</mat-label>
+        <input type="password" autocomplete="current-password" matInput formControlName="password"
+            placeholder="Password">
+        <mat-error *ngIf="form.controls.password.dirty && form.controls.password.errors?.['required']">Password required
+        </mat-error>
+        <mat-error *ngIf="form.controls.password.dirty && form.controls.password.errors?.['minlength']">Must be at least
+            7 characters
+        </mat-error>
+    </mat-form-field>
+    <button mat-raised-button type="submit" [disabled]="!form.valid">Sign up</button>
+</form>
+<a routerLink=""><button mat-raised-button class="accept">Back to login</button></a>
