@@ -2,6 +2,7 @@ from django.http.response import HttpResponseForbidden, HttpResponseNotFound
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 import json
@@ -17,6 +18,7 @@ def get_csrf(request):
     return response
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def create_user_view(request: HttpRequest):
     req = json.loads(request.body)
@@ -27,17 +29,24 @@ def create_user_view(request: HttpRequest):
 # header X-CSRFToken
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def login_view(request: HttpRequest):
     req = json.loads(request.body)
+    user =User.objects.filter(email=req['email']).first() #ta cochino pero quiero logear con mail
     user = authenticate(
-        request, username=req['username'], password=req['password'])
+        request, username=user.username, password=req['password'])
     if user is None:
         return JsonResponse({'detail': 'Invalid credentials.'}, status=401)
     login(request, user)
-    return JsonResponse({'detail': 'Successfully logged in.'})
+    token = get_token(request)
+    response = JsonResponse(
+        {'email': user.email,'username':user.username,'id':user.id})
+    response['X-CSRFToken'] = token
+    return response
 
 
+@require_http_methods(['POST'])
 def logout_view(request: HttpRequest):
     if not request.user.is_authenticated:
         return JsonResponse({'detail': 'You\'re not logged in.'}, status=400)
@@ -59,7 +68,8 @@ def get_auth_user_view(request: HttpRequest):
 
 @require_http_methods(['POST'])
 def email_exists_view(request: HttpRequest):
-    exists =User.objects.filter(email=json.loads(request.body)['email']).exists()
+    exists = User.objects.filter(
+        email=json.loads(request.body)['email']).exists()
     return JsonResponse({'exists': str(exists).lower()})
 
 # ----------------BOARD---------------------
@@ -83,6 +93,15 @@ def boards_from_owner(request: HttpRequest, owner_id: int):
     status = 200 if boards.count() > 0 else 204
     return JsonResponse(list(boards.values("id", "name", "owner")), safe=False, status=status)
 
+@require_http_methods(['GET'])
+def boards_from_guest(request: HttpRequest, guest_id: int):
+    user = request.user
+    if user.id != guest_id:
+        return HttpResponseForbidden()
+    boards = Board.objects.filter(guests=user)
+    status = 200 if boards.count() > 0 else 204
+    return JsonResponse(list(boards.values("id", "name", "owner")), safe=False, status=status)
+
 
 # ----------------COLUMNS--------------------------------------------------
 
@@ -96,7 +115,7 @@ def columns_view(request: HttpRequest, board_id: int):
             id=board.id, guests__exact=request.user).exists()
         if request.user.id != board.owner.id and not is_guest:
             return HttpResponseForbidden()
-        else:    
+        else:
             if request.method == 'POST':
                 req = json.loads(request.body)
                 Column.objects.create(name=req['name'], board=board)
