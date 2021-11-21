@@ -10,6 +10,8 @@ urlpatterns = [
     path('auth/getauthuser', views.get_auth_user_view),
     path('auth/emailexists', views.email_exists_view),
     path('boards', views.create_board_view),
+    path('boards/<int:id>', views.get_full_board),
+    path('boards/guests/<int:guest_id>', views.boards_from_guest),
     path('user/<int:owner_id>/boards', views.boards_from_owner),
     path('boards/<int:board_id>/columns', views.columns_view),
     path('columns/<int:column_id>', views.edit_columns_view),

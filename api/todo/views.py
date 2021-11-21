@@ -5,6 +5,8 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.forms.models import model_to_dict
+from django.core import serializers
 import json
 from todo.models import *
 # Create your views here.
@@ -63,7 +65,7 @@ def session_view(request: HttpRequest):
 def get_auth_user_view(request: HttpRequest):
     if not request.user.is_authenticated:
         return JsonResponse({'isAuthenticated': False})
-    return JsonResponse({'username': request.user.username})
+    return JsonResponse({'username': request.user.username,'email':request.user.email,'id':request.user.id})
 
 
 @require_http_methods(['POST'])
@@ -100,9 +102,24 @@ def boards_from_guest(request: HttpRequest, guest_id: int):
         return HttpResponseForbidden()
     boards = Board.objects.filter(guests=user)
     status = 200 if boards.count() > 0 else 204
-    return JsonResponse(list(boards.values("id", "name", "owner")), safe=False, status=status)
+    return JsonResponse(list(boards.values("id", "name")), safe=False, status=status)
 
-
+@require_http_methods(['GET'])
+def get_full_board(request: HttpRequest, id: int):
+    board:Board = Board.objects.filter(id=id).first()
+    if board is None:
+        return HttpResponseNotFound()
+    else:
+        is_guest = Board.objects.filter(
+            id=board.id, guests__exact=request.user).exists()
+        if request.user.id != board.owner.id and not is_guest:
+            return HttpResponseForbidden()
+        else:
+            
+            return JsonResponse(board.to_dict(),safe=False)
+            
+    
+    
 # ----------------COLUMNS--------------------------------------------------
 
 @require_http_methods(['POST', 'GET'])
