@@ -16,5 +16,6 @@ urlpatterns = [
     path('boards/<int:board_id>/columns', views.columns_view),
     path('columns/<int:column_id>', views.edit_columns_view),
     path('columns/<int:column_id>/notes', views.notes_view),
-    path('notes/<int:note_id>', views.edit_note_view)
+    path('notes/<int:note_id>', views.edit_note_view),
+    path('notes/<int:note_id>/column',views.change_note_column)
 ]

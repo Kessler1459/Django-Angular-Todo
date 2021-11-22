@@ -84,6 +84,6 @@ class Note(models.Model):
         super(Note, self).save(*args, **kwargs)
 
     def to_dict(self):
-        return {'id': self.id, 'name': self.name, 'description': self.description,'datetime':self.datetime, 'category': self.category.to_dict(),
+        return {'id': self.id, 'name': self.name,'state':self.state, 'description': self.description,'datetime':self.datetime, 'category': self.category.to_dict(),
                 'creator': {'id': self.creator.id, 'username': self.creator.username, 'email': self.creator.email}
                 }

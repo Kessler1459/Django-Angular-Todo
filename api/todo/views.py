@@ -5,7 +5,6 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.forms.models import model_to_dict
 from django.core import serializers
 import json
 from todo.models import *
@@ -24,8 +23,7 @@ def get_csrf(request):
 @require_http_methods(['POST'])
 def create_user_view(request: HttpRequest):
     req = json.loads(request.body)
-    new_user = User.objects.create_user(
-        username=req['username'], email=req['email'], password=req['password'])
+    new_user = User.objects.create_user(username=req['username'], email=req['email'], password=req['password'])
     return JsonResponse({'username': new_user.username, 'email': new_user.email}, status=201)
 
 # header X-CSRFToken
@@ -35,15 +33,14 @@ def create_user_view(request: HttpRequest):
 @require_http_methods(['POST'])
 def login_view(request: HttpRequest):
     req = json.loads(request.body)
-    user =User.objects.filter(email=req['email']).first() #ta cochino pero quiero logear con mail
-    user = authenticate(
-        request, username=user.username, password=req['password'])
+    # ta cochino pero quiero logear con mail
+    user = User.objects.filter(email=req['email']).first()
+    user = authenticate( request, username=user.username, password=req['password'])
     if user is None:
         return JsonResponse({'detail': 'Invalid credentials.'}, status=401)
     login(request, user)
     token = get_token(request)
-    response = JsonResponse(
-        {'email': user.email,'username':user.username,'id':user.id})
+    response = JsonResponse({'email': user.email, 'username': user.username, 'id': user.id})
     response['X-CSRFToken'] = token
     return response
 
@@ -65,7 +62,7 @@ def session_view(request: HttpRequest):
 def get_auth_user_view(request: HttpRequest):
     if not request.user.is_authenticated:
         return JsonResponse({'isAuthenticated': False})
-    return JsonResponse({'username': request.user.username,'email':request.user.email,'id':request.user.id})
+    return JsonResponse({'username': request.user.username, 'email': request.user.email, 'id': request.user.id})
 
 
 @require_http_methods(['POST'])
@@ -81,9 +78,8 @@ def email_exists_view(request: HttpRequest):
 def create_board_view(request: HttpRequest):
     req = json.loads(request.body)
     user = request.user
-    new_board = Board(owner=user, name=req['name'])
-    new_board.save()
-    return JsonResponse({'detail': 'Board created'}, status=201)
+    new_board: Board = Board.objects.create(owner=user, name=req['name'])
+    return JsonResponse(new_board.to_dict(), status=201)
 
 
 @require_http_methods(['GET'])
@@ -95,6 +91,7 @@ def boards_from_owner(request: HttpRequest, owner_id: int):
     status = 200 if boards.count() > 0 else 204
     return JsonResponse(list(boards.values("id", "name", "owner")), safe=False, status=status)
 
+
 @require_http_methods(['GET'])
 def boards_from_guest(request: HttpRequest, guest_id: int):
     user = request.user
@@ -104,22 +101,21 @@ def boards_from_guest(request: HttpRequest, guest_id: int):
     status = 200 if boards.count() > 0 else 204
     return JsonResponse(list(boards.values("id", "name")), safe=False, status=status)
 
+
 @require_http_methods(['GET'])
 def get_full_board(request: HttpRequest, id: int):
-    board:Board = Board.objects.filter(id=id).first()
+    board: Board = Board.objects.filter(id=id).first()
     if board is None:
         return HttpResponseNotFound()
     else:
-        is_guest = Board.objects.filter(
-            id=board.id, guests__exact=request.user).exists()
+        is_guest = Board.objects.filter(id=board.id, guests__exact=request.user).exists()
         if request.user.id != board.owner.id and not is_guest:
             return HttpResponseForbidden()
         else:
-            
-            return JsonResponse(board.to_dict(),safe=False)
-            
-    
-    
+
+            return JsonResponse(board.to_dict(), safe=False)
+
+
 # ----------------COLUMNS--------------------------------------------------
 
 @require_http_methods(['POST', 'GET'])
@@ -128,15 +124,14 @@ def columns_view(request: HttpRequest, board_id: int):
     if board is None:
         return HttpResponseNotFound()
     else:
-        is_guest = Board.objects.filter(
-            id=board.id, guests__exact=request.user).exists()
+        is_guest = Board.objects.filter(id=board.id, guests__exact=request.user).exists()
         if request.user.id != board.owner.id and not is_guest:
             return HttpResponseForbidden()
         else:
             if request.method == 'POST':
                 req = json.loads(request.body)
-                Column.objects.create(name=req['name'], board=board)
-                return JsonResponse({'detail': 'Column created'}, status=201)
+                newCol: Column = Column.objects.create(name=req['name'], board=board)
+                return JsonResponse(newCol.to_dict(), status=201)
             elif request.method == 'GET':
                 columns = Column.objects.filter(board=board)
                 status = 200 if columns.count() > 0 else 204
@@ -145,20 +140,19 @@ def columns_view(request: HttpRequest, board_id: int):
 
 @require_http_methods(['PUT', 'DELETE'])
 def edit_columns_view(request: HttpRequest, column_id: int):
-    column = Column.objects.filter(id=column_id).first()
+    column: Column = Column.objects.filter(id=column_id).first()
     if column is None:
         return HttpResponseNotFound()
     else:
-        is_guest = Board.objects.filter(
-            id=column.board.id, guests__exact=request.user).exists()
+        is_guest = Board.objects.filter(id=column.board.id, guests__exact=request.user).exists()
         if request.user.id != column.board.owner.id and not is_guest:
             return HttpResponseForbidden()
         else:
             if request.method == 'PUT':
                 req = json.loads(request.body)
                 column.name = req['name']
-                column.save()
-                return JsonResponse({'id': column.id, 'name': column.name}, status=200)
+                column = column.save()
+                return JsonResponse(column.to_dict(), status=200)
             elif request.method == 'DELETE':
                 column.delete()
                 return JsonResponse({'detail': 'Column deleted'}, status=200)
@@ -171,17 +165,15 @@ def notes_view(request: HttpRequest, column_id: int):
     if column is None:
         return HttpResponseNotFound()
     else:
-        is_guest = Board.objects.filter(
-            id=column.board.id, guests__exact=request.user).exists()
+        is_guest = Board.objects.filter(id=column.board.id, guests__exact=request.user).exists()
         if not is_guest and request.user.id == column.board.owner.id:
             return HttpResponseForbidden()
         else:
             if request.method == 'POST':
                 req = json.loads(request.body)
-                note = Note(name=req['name'],
-                            description=req['description'], column=column, creator=request.user)
-                note.save()
-                return JsonResponse({'detail': 'Note created'}, status=201)
+                category = Category.objects.filter(id=req['category']).first()
+                note: Note = Note.objects.create(name=req['name'], description=req['description'], category=category, column=column, creator=request.user)
+                return JsonResponse(note.to_dict(), status=201)
             elif request.method == 'GET':
                 notes = Note.objects.filter(column=column)
                 status = 200 if notes.count() > 0 else 204
@@ -190,26 +182,38 @@ def notes_view(request: HttpRequest, column_id: int):
 
 @require_http_methods(['PUT', 'DELETE'])
 def edit_note_view(request: HttpRequest, note_id: int):
-    note = Note.objects.filter(id=note_id).first()
+    note: Note = Note.objects.filter(id=note_id).first()
     if note is None:
         return HttpResponseNotFound()
     else:
         user = request.user
-        is_guest = Board.objects.filter(
-            id=note.column.board.id, guests__exact=user).exists()
+        is_guest = Board.objects.filter(id=note.column.board.id, guests__exact=user).exists()
         if not is_guest and user.id == note.column.board.owner.id:
             return HttpResponseForbidden()
         else:
             if request.method == 'PUT':
                 req = json.loads(request.body)
-                column = note.column if req['column'] == note.column.id else Column.objects.get(
-                    id=req['column'])
                 note.name = req['name']
                 note.description = req['description']
                 note.state = req['state']
-                note.column = column
                 note.save()
-                return JsonResponse({'id': note.id, 'name': note.name, 'description': note.description, 'column': note.column.id, 'state': note.state, 'creator': note.creator.id}, status=200)
+                return JsonResponse(note.to_dict(), status=200)
             elif request.method == 'DELETE':
                 note.delete()
                 return JsonResponse({'detail': 'Note deleted'}, status=200)
+
+
+def change_note_column(request: HttpRequest, note_id: int):
+    note: Note = Note.objects.filter(id=note_id).first()
+    if note is None:
+        return HttpResponseNotFound()
+    else:
+        user = request.user
+        is_guest = Board.objects.filter(id=note.column.board.id, guests__exact=user).exists()
+        if not is_guest and user.id == note.column.board.owner.id:
+            return HttpResponseForbidden()
+        else:
+            new_col = json.loads(request.body)['column']
+            column: Column = note.column if new_col == note.column.id else Column.objects.filter(id=new_col).first()
+            note.column=column
+            return JsonResponse({"Column changed"},status=200)
