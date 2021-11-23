@@ -14,7 +14,13 @@ import { MatInputModule } from '@angular/material/input'
 import { MatButtonModule } from '@angular/material/button'
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-
+import { BoardComponent } from './components/board/board.component';
+import { AddColumnComponent } from './components/board/add-column/add-column.component';
+import { MatDialogModule } from "@angular/material/dialog";
+import { MatIconModule } from '@angular/material/icon';
+import { NoteComponent } from './components/board/note/note.component';
+import { NewNoteComponent } from './components/board/new-note/new-note.component';
+import {MatSelectModule} from '@angular/material/select'
 
 @NgModule({
     declarations: [
@@ -22,8 +28,12 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
         NavComponent,
         SignupComponent,
         LoginComponent,
-        DashboardComponent
-        
+        DashboardComponent,
+        BoardComponent,
+        AddColumnComponent,
+        NoteComponent,
+        NewNoteComponent
+
     ],
     imports: [
         BrowserModule,
@@ -34,13 +44,16 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
         MatInputModule,
         MatButtonModule,
         HttpClientModule,
-        CookieModule.forRoot()
+        CookieModule.forRoot(),
+        MatDialogModule,
+        MatIconModule,
+        MatSelectModule
     ],
     providers: [{
-        provide: HTTP_INTERCEPTORS, 
-        useClass: AuthInterceptorService, 
+        provide: HTTP_INTERCEPTORS,
+        useClass: AuthInterceptorService,
         multi: true
-      }],
+    }],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

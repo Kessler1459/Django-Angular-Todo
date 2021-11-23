@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>New note</h2>
+<form (ngSubmit)="onSubmit()" [formGroup]="form">
+    <div class="inputs">
+        <mat-form-field appearance="standard">
+            <mat-label>Name</mat-label>
+            <input type="text" matInput formControlName='name' placeholder="Name">
+            <mat-error *ngIf="form.controls.name.dirty && form.controls.name.errors?.['required']">Name required
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="standard">
+            <mat-label>Description</mat-label>
+            <input  type="text" matInput formControlName='description' placeholder="Description"/>
+        </mat-form-field>
+        <mat-form-field appearance="standard">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+                <mat-option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <button mat-raised-button color="primary" type="submit">Submit</button>
+</form>

@@ -1,0 +1,17 @@
+<section *ngIf="board">
+    <h1>{{board.name}} <i *ngIf="board.owner.id==authService.user.id" (click)="onDeleteBoard()" class="material-icons">delete</i></h1>
+    <section class="column-container">
+        <div *ngFor="let column of board.columns" class="column">
+            <h2>{{column.name}} <i (click)="onDeleteColumn(column)" class="material-icons">delete</i></h2>
+            <div class="note" *ngFor="let note of column.notes" (click)="openNoteDialog(note)">
+                <h3><strong>{{note.name}}</strong> {{enumAsString(note.state)}}</h3>
+                <div>
+                    {{note.description}}
+                </div>
+            </div>
+            <i (click)="openNoteFormDialog(column.id)" class="material-icons">add</i>
+        </div>
+    </section>
+    <button mat-raised-button color="primary" (click)="openNewColumnDialog()">New column</button>
+</section>
+

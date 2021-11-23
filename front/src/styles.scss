@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-
-
-$color-blue-light:rgb(164, 213, 255);
+$indigo:#3f51b5;
+$color-blue-light:#d2d9ff;
+$pink:#ff4081;
+$pink-light:#ff9ebe;
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
@@ -13,4 +14,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .accept{
     background-color:$color-blue-light;
+}
+
+.mat-dialog-container{
+    box-shadow: -6px 7px 20px 3px;
+}
+
+.inputs{
+    display: flex;
+    flex-direction: column;
 }

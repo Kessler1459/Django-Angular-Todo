@@ -1,0 +1,35 @@
+<section *ngIf="!editing">
+    <h2 mat-dialog-title>{{data.note.name}} <div><i (click)="deleteNote()" class="material-icons">delete</i> <i
+                (click)="toggleEdit()" class="material-icons">edit</i></div>
+    </h2>
+    <i>{{dateFormat(data.note.datetime)}}</i>
+    <p><strong>Description:</strong> {{data.note.description}}</p>
+    <p><strong>Category:</strong> {{data.note.category.name}}</p>
+    <p><strong>State:</strong> {{enumAsString(data.note.state)}}</p>
+    <p><strong>Created by:</strong> {{data.note.creator.username}}</p>
+</section>
+<section *ngIf="editing">
+    <h2 mat-dialog-title>Edit</h2>
+    <form (ngSubmit)="onSubmit()" [formGroup]="form">
+        <div class="inputs">
+            <mat-form-field appearance="standard">
+                <mat-label>Name</mat-label>
+                <input type="text" matInput formControlName="name" placeholder="Name">
+                <mat-error *ngIf="form.controls.name.dirty && form.controls.name.errors?.['required']">Name required
+                </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="standard">
+                <mat-label>Description</mat-label>
+                <input type="text" matInput formControlName="description" placeholder="Description">
+            </mat-form-field>
+            <mat-form-field appearance="standard">
+                <mat-label>Category</mat-label>
+                <mat-select formControlName="category">
+                    <mat-option *ngFor="let cat of data.categories" [value]="cat.id">{{cat.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <button mat-raised-button color="primary" type="submit">Submit</button>
+    </form>
+    <button mat-raised-button class="back" (click)="toggleEdit()">Back</button>
+</section>

@@ -1,0 +1,29 @@
+@import '~src/styles.scss';
+
+nav {
+    color: white;
+    padding: 0.7%;
+    background-color: $indigo;
+    height: 2.5vh;
+    ul {
+        align-items: center;
+        height: 100%;
+        margin: auto;
+        list-style: none;
+        display: flex;
+        flex-direction: row;
+        align-content: space-between;
+        justify-content: flex-start;
+        font-weight: 500;
+        font-size: 16pt;
+        .btn {
+            border-radius: 6%;
+            padding: 0.5%;
+            margin-right: 1%;
+            &:hover {
+                cursor: pointer;
+                background-color: $color-blue-light;
+            }
+        }
+    }
+}
