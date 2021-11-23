@@ -102,18 +102,22 @@ def boards_from_guest(request: HttpRequest, guest_id: int):
     return JsonResponse(list(boards.values("id", "name")), safe=False, status=status)
 
 
-@require_http_methods(['GET'])
+@require_http_methods(['GET','DELETE'])
 def get_full_board(request: HttpRequest, id: int):
     board: Board = Board.objects.filter(id=id).first()
     if board is None:
         return HttpResponseNotFound()
     else:
         is_guest = Board.objects.filter(id=board.id, guests__exact=request.user).exists()
-        if request.user.id != board.owner.id and not is_guest:
-            return HttpResponseForbidden()
-        else:
-
+        if request.method=='GET':
+            if request.user.id != board.owner.id and not is_guest:
+                return HttpResponseForbidden()
             return JsonResponse(board.to_dict(), safe=False)
+        elif request.method=='DELETE':
+            if request.user.id != board.owner.id:
+                return HttpResponseForbidden()
+            board.delete()
+            return JsonResponse({'detail': 'Board deleted'}, status=200)
 
 
 # ----------------COLUMNS--------------------------------------------------
