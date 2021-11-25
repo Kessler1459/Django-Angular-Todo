@@ -34,7 +34,7 @@ export class NoteComponent implements OnInit {
             const values = this.form.value;
             this.data.note.name = values.name;
             this.data.note.description = values.description;
-            this.data.note.category = this.data.categories.find(cat => cat.id = values.category) ?? this.data.note.category;
+            this.data.note.category = this.data.categories.find(cat => cat.id == values.category) ?? this.data.note.category;
             this.editNoteEmitter.emit(this.data.note)
         }       
     }

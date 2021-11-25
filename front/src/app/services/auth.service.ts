@@ -13,7 +13,7 @@ export class AuthService {
 
     constructor(private http: HttpClient) {
         this.getAuthUser().subscribe(res => {
-            this.user=res;
+            this.user = res;
             this.isLoggedIn = true
         })
     }
@@ -21,7 +21,7 @@ export class AuthService {
     login(email: string, password: string) {
         return this.http.post<User>(this.rootUrl + 'login', { email, password }).pipe(
             tap((user) => {
-                this.user=user;
+                this.user = user;
                 this.isLoggedIn = true;
             })
         )
@@ -40,10 +40,10 @@ export class AuthService {
     }
 
     emailExists(email: string) {
-        return this.http.post(this.rootUrl + "emailexists", { email })
+        return this.http.post<any>(this.rootUrl + "emailexists", { email }).pipe(map(res => res.exists == 'true'))
     }
 
-    getAuthUser(){
-        return this.http.get<User>(this.rootUrl+'getauthuser')
+    getAuthUser() {
+        return this.http.get<User>(this.rootUrl + 'getauthuser')
     }
 }

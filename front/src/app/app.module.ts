@@ -20,7 +20,8 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { MatIconModule } from '@angular/material/icon';
 import { NoteComponent } from './components/board/note/note.component';
 import { NewNoteComponent } from './components/board/new-note/new-note.component';
-import {MatSelectModule} from '@angular/material/select'
+import {MatSelectModule} from '@angular/material/select';
+import { SettingsComponent } from './components/board/settings/settings.component'
 
 @NgModule({
     declarations: [
@@ -32,7 +33,8 @@ import {MatSelectModule} from '@angular/material/select'
         BoardComponent,
         AddColumnComponent,
         NoteComponent,
-        NewNoteComponent
+        NewNoteComponent,
+        SettingsComponent
 
     ],
     imports: [

@@ -1,5 +1,5 @@
 <section *ngIf="board">
-    <h1>{{board.name}} <i *ngIf="board.owner.id==authService.user.id" (click)="onDeleteBoard()" class="material-icons">delete</i></h1>
+    <h1>{{board.name}} <i *ngIf="board.owner.id==authService.user.id" (click)="onDeleteBoard()" class="material-icons">delete</i><a routerLink="settings"><i *ngIf="board.owner.id==authService.user.id" class="material-icons">settings</i></a></h1>
     <section class="column-container">
         <div *ngFor="let column of board.columns" class="column">
             <h2>{{column.name}} <i (click)="onDeleteColumn(column)" class="material-icons">delete</i></h2>
