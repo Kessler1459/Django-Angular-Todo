@@ -11,6 +11,7 @@ import { LoginComponent } from './components/login/login.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
+import { DragDropModule } from '@angular/cdk/drag-drop'
 import { MatButtonModule } from '@angular/material/button'
 import { AuthInterceptorService } from './services/auth-interceptor.service';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -49,7 +50,8 @@ import { SettingsComponent } from './components/board/settings/settings.componen
         CookieModule.forRoot(),
         MatDialogModule,
         MatIconModule,
-        MatSelectModule
+        MatSelectModule,
+        DragDropModule
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,

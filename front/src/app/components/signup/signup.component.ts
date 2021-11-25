@@ -21,7 +21,13 @@ export class SignupComponent implements OnInit {
 
     onSubmit() {
         if (this.form.valid) {
-            this.authService.emailExists(this.form.value.email).subscribe(exists=>console.log(exists))
+            this.authService.emailExists(this.form.value.email).subscribe(exists=>{
+                if (exists==false){
+                    const values=this.form.value;
+                    this.authService.signUp(values.email,values.username,values.password).subscribe(res=>console.log(res)
+                    )
+                }
+            })
         }
     }
 

@@ -46,4 +46,8 @@ export class AuthService {
     getAuthUser() {
         return this.http.get<User>(this.rootUrl + 'getauthuser')
     }
+
+    signUp(email:string,username:string,password:string){
+        return this.http.post(this.rootUrl+'signup', {email,username,password})
+    }
 }

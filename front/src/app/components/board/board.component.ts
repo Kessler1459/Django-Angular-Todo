@@ -9,6 +9,7 @@ import { Column } from 'src/app/models/column';
 import { NoteComponent } from './note/note.component';
 import { Note, State } from 'src/app/models/note';
 import { NewNoteComponent } from './new-note/new-note.component';
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-board',
@@ -17,7 +18,7 @@ import { NewNoteComponent } from './new-note/new-note.component';
 })
 export class BoardComponent implements OnInit {
     board: Board;
-    constructor(public authService: AuthService, private actRoute: ActivatedRoute, private boardService: BoardService, private matDialog: MatDialog, private router:Router) { }
+    constructor(public authService: AuthService, private actRoute: ActivatedRoute, private boardService: BoardService, private matDialog: MatDialog, private router: Router) { }
 
     ngOnInit(): void {
         const id = this.actRoute.snapshot.paramMap.get("boardId");
@@ -49,7 +50,7 @@ export class BoardComponent implements OnInit {
         const subscribeEdit = instance.componentInstance.editNoteEmitter.subscribe(editedNote => {
             this.onEditNote(editedNote);
             console.log("a");
-            
+
             instance.close();
         })
         instance.afterClosed().subscribe(() => {
@@ -95,11 +96,11 @@ export class BoardComponent implements OnInit {
     }
 
     onEditNote(editedNote: Note) {
-        this.boardService.editNote(editedNote).subscribe(edited=>{
+        this.boardService.editNote(editedNote).subscribe(edited => {
             for (let column of this.board.columns) {
-                const index = column.notes.findIndex(note=>note.id=editedNote.id)
+                const index = column.notes.findIndex(note => note.id = editedNote.id)
                 if (index) {
-                    column.notes[index]=editedNote;
+                    column.notes[index] = editedNote;
                     break;
                 }
             }
@@ -110,8 +111,29 @@ export class BoardComponent implements OnInit {
         return (Object.values(State)[Object.keys(State).indexOf(state)]);
     }
 
-    onDeleteBoard(){
-        this.boardService.deleteBoard(this.board.id).subscribe(()=> this.router.navigateByUrl(""))
+    onDeleteBoard() {
+        this.boardService.deleteBoard(this.board.id).subscribe(() => this.router.navigateByUrl(""))
+    }
+
+    drop(event: CdkDragDrop<Note[]>) {
+        if (event.previousContainer === event.container) {
+            moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        } else {
+            const prevCol = this.board.columns.find(col => col.notes == event.previousContainer.data)
+            const col = this.board.columns.find(col => col.notes == event.container.data)
+            if (col) {
+                const item = prevCol?.notes[event.previousIndex];
+                if (item) {
+                    this.boardService.changeNoteColumn(item.id, col.id).subscribe(res=>console.log(res))
+                    transferArrayItem(
+                        event.previousContainer.data,
+                        event.container.data,
+                        event.previousIndex,
+                        event.currentIndex,
+                    );
+                }
+            }
+        }
     }
 
 }
