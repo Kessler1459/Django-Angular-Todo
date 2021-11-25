@@ -1,4 +1,4 @@
-from django.http.response import HttpResponseForbidden, HttpResponseNotFound
+from django.http.response import HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.middleware.csrf import get_token
@@ -35,7 +35,7 @@ def login_view(request: HttpRequest):
     req = json.loads(request.body)
     # ta cochino pero quiero logear con mail
     user = User.objects.filter(email=req['email']).first()
-    user = authenticate( request, username=user.username, password=req['password'])
+    user = authenticate(request, username=user.username, password=req['password'])
     if user is None:
         return JsonResponse({'detail': 'Invalid credentials.'}, status=401)
     login(request, user)
@@ -102,25 +102,69 @@ def boards_from_guest(request: HttpRequest, guest_id: int):
     return JsonResponse(list(boards.values("id", "name")), safe=False, status=status)
 
 
-@require_http_methods(['GET','DELETE'])
+@require_http_methods(['GET', 'DELETE'])
 def get_full_board(request: HttpRequest, id: int):
     board: Board = Board.objects.filter(id=id).first()
     if board is None:
         return HttpResponseNotFound()
     else:
         is_guest = Board.objects.filter(id=board.id, guests__exact=request.user).exists()
-        if request.method=='GET':
+        if request.method == 'GET':
             if request.user.id != board.owner.id and not is_guest:
                 return HttpResponseForbidden()
             return JsonResponse(board.to_dict(), safe=False)
-        elif request.method=='DELETE':
+        elif request.method == 'DELETE':
             if request.user.id != board.owner.id:
                 return HttpResponseForbidden()
             board.delete()
             return JsonResponse({'detail': 'Board deleted'}, status=200)
 
 
+@require_http_methods(['GET', 'POST'])
+def board_guests(request: HttpRequest, id: int):
+    board: Board = Board.objects.filter(id=id).first()
+    if board is None:
+        return HttpResponseNotFound()
+    elif request.user.id != board.owner.id:
+        return HttpResponseForbidden()
+    else:
+        if request.method == 'GET':
+            dict = []
+            guests = board.guests.all()
+            for guest in guests:
+                dict.append({"id": guest.id, "username": guest.username, "email": guest.email})
+            status = 200 if board.guests.count() > 0 else 204
+            return JsonResponse(dict, status=status, safe=False)
+        elif request.method == 'POST':
+            guest_email = json.loads(request.body)['email']
+            guest: User = User.objects.filter(email=guest_email).first()
+            if request.user==guest:     #que no se agregue a si mismo
+                return HttpResponseBadRequest()
+            board.guests.add(guest)
+            return JsonResponse({"id": guest.id, "username": guest.username, "email": guest.email}, status=200)
+
+
+@require_http_methods(['GET','POST'])
+def get_board_categories(request: HttpRequest, id: int):
+    board: Board = Board.objects.filter(id=id).first()
+    if board is None:
+        return HttpResponseNotFound()
+    elif request.user.id != board.owner.id:
+        return HttpResponseForbidden()
+    else:
+        if request.method=='GET':
+            dict = []
+            categories: list[Category] = board.categories.all()
+            for cat in categories:
+                dict.append(cat.to_dict())
+            status = 200 if categories.count() > 0 else 204
+            return JsonResponse(dict, status=status, safe=False)
+        elif request.method=='POST':
+            newCat: Category= Category.objects.create(name=json.loads(request.body)['name'],board=board)
+            return JsonResponse(newCat.to_dict(),status=200)
+        
 # ----------------COLUMNS--------------------------------------------------
+
 
 @require_http_methods(['POST', 'GET'])
 def columns_view(request: HttpRequest, board_id: int):
@@ -170,7 +214,7 @@ def notes_view(request: HttpRequest, column_id: int):
         return HttpResponseNotFound()
     else:
         is_guest = Board.objects.filter(id=column.board.id, guests__exact=request.user).exists()
-        if not is_guest and request.user.id == column.board.owner.id:
+        if not is_guest and request.user.id != column.board.owner.id:
             return HttpResponseForbidden()
         else:
             if request.method == 'POST':
@@ -192,7 +236,7 @@ def edit_note_view(request: HttpRequest, note_id: int):
     else:
         user = request.user
         is_guest = Board.objects.filter(id=note.column.board.id, guests__exact=user).exists()
-        if not is_guest and user.id == note.column.board.owner.id:
+        if not is_guest and user.id != note.column.board.owner.id:
             return HttpResponseForbidden()
         else:
             if request.method == 'PUT':
@@ -200,6 +244,7 @@ def edit_note_view(request: HttpRequest, note_id: int):
                 note.name = req['name']
                 note.description = req['description']
                 note.state = req['state']
+                note.category = Category.objects.filter(id=req['category']['id']).first()
                 note.save()
                 return JsonResponse(note.to_dict(), status=200)
             elif request.method == 'DELETE':
@@ -219,5 +264,5 @@ def change_note_column(request: HttpRequest, note_id: int):
         else:
             new_col = json.loads(request.body)['column']
             column: Column = note.column if new_col == note.column.id else Column.objects.filter(id=new_col).first()
-            note.column=column
-            return JsonResponse({"Column changed"},status=200)
+            note.column = column
+            return JsonResponse({"Column changed"}, status=200)

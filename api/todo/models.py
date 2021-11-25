@@ -1,4 +1,3 @@
-import collections
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.deletion import CASCADE
@@ -18,13 +17,13 @@ class Board(models.Model):
         if new:
             column = Column(board=self, name="To do")
             column.save()
+            Category.objects.create(name="Task", board=self)
 
     def to_dict(self):
         dict = {
             'id': self.id, 'name': self.name,
             'owner':
-                {'id': self.owner.id, 'username': self.owner.username,
-                    'email': self.owner.email},
+                {'id': self.owner.id, 'username': self.owner.username,'email': self.owner.email},
             'guests': [],
             'categories': [],
             'columns': []
@@ -52,8 +51,7 @@ class Column(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=30, blank=False)
-    board = models.ForeignKey(Board, on_delete=CASCADE,
-                              related_name="categories")
+    board = models.ForeignKey(Board, on_delete=CASCADE,related_name="categories")
 
     def to_dict(self):
         return {'id': self.id, 'name': self.name}
@@ -79,8 +77,7 @@ class Note(models.Model):
 
     def save(self, *args, **kwargs):
         if self.category is None:
-            self.category = Category.objects.get_or_create(
-                name="Task", board=self.column.board)[0]
+            self.category = Category.objects.filter(name="Task", board=self.column.board).first()
         super(Note, self).save(*args, **kwargs)
 
     def to_dict(self):
