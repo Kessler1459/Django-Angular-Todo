@@ -1,3 +1,4 @@
+<h1>Sign up</h1>
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <mat-form-field appearance="standard">
         <mat-label>Username</mat-label>
@@ -26,5 +27,5 @@
         </mat-error>
     </mat-form-field>
     <button mat-raised-button type="submit" [disabled]="!form.valid">Sign up</button>
+    <a routerLink="" mat-raised-button color="accent">Back</a>
 </form>
-<a routerLink=""><button mat-raised-button class="accept">Back to login</button></a>

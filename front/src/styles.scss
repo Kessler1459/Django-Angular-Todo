@@ -4,7 +4,7 @@ $color-blue-light:#d2d9ff;
 $pink:#ff4081;
 $pink-light:#ff9ebe;
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow: hidden}
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .container{

@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth.service';
@@ -9,7 +10,7 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class SignupComponent implements OnInit {
     form: FormGroup;
-    constructor(private authService: AuthService) { }
+    constructor(private authService: AuthService, private location:Location) { }
 
     ngOnInit(): void {
         this.form = new FormGroup({
@@ -24,8 +25,7 @@ export class SignupComponent implements OnInit {
             this.authService.emailExists(this.form.value.email).subscribe(exists=>{
                 if (exists==false){
                     const values=this.form.value;
-                    this.authService.signUp(values.email,values.username,values.password).subscribe(res=>console.log(res)
-                    )
+                    this.authService.signUp(values.email,values.username,values.password).subscribe(()=>this.location.back())
                 }
             })
         }
