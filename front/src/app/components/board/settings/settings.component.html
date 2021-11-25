@@ -1,25 +1,31 @@
-<form [formGroup]="categoriesForm" (ngSubmit)="onSubmitCategory()">
-    <mat-form-field appearance="standard">
-        <mat-label>Name</mat-label>
-        <input type="name" autocomplete="name" matInput formControlName="name" placeholder="Name">
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" [disabled]="categoriesForm.valid==false">New category</button>
-</form>
-<ul>
-    <li *ngFor="let cat of categories">{{cat.name}}</li>
-</ul>
-
-<form [formGroup]="guestsForm" (ngSubmit)="onSubmitGuest()">
-    <mat-form-field appearance="standard">
-        <mat-label>Email</mat-label>
-        <input type="email" autocomplete="email" matInput formControlName="email" placeholder="Email">
-        <mat-error *ngIf="guestsForm.controls.email.dirty && guestsForm.controls.email.errors?.['emailnotexists']">Must be registered user
-        </mat-error>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" [disabled]="!guestsForm.valid">New guest</button>
-</form>
-<ul>
-    <li *ngFor="let guest of guests">{{guest.username}}</li>
-</ul>
-
-<button mat-raised-button color="accent" (click)="back()">Back</button>
+<section>
+    <div class="list">
+    <form [formGroup]="categoriesForm" (ngSubmit)="onSubmitCategory()">
+        <mat-form-field appearance="standard">
+            <mat-label>Name</mat-label>
+            <input type="name" autocomplete="name" matInput formControlName="name" placeholder="Name">
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="categoriesForm.valid==false">New
+            category</button>
+    </form>
+    <ul>
+        <li *ngFor="let cat of categories">{{cat.name}}</li>
+    </ul>
+</div>
+<div class="list">
+    <form [formGroup]="guestsForm" (ngSubmit)="onSubmitGuest()">
+        <mat-form-field appearance="standard">
+            <mat-label>Email</mat-label>
+            <input type="email" autocomplete="email" matInput formControlName="email" placeholder="Email">
+            <mat-error *ngIf="guestsForm.controls.email.dirty && guestsForm.controls.email.errors?.['emailnotexists']">
+                Must be registered user
+            </mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!guestsForm.valid">New guest</button>
+    </form>
+    <ul>
+        <li *ngFor="let guest of guests">{{guest.username}}</li>
+    </ul>
+</div>
+</section>
+<button mat-raised-button color="accent" (click)="back()" class="back">Back</button>

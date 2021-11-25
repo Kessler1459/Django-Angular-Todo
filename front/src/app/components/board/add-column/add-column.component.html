@@ -1,5 +1,10 @@
 <form (ngSubmit)="onSubmit()" [formGroup]="form">
-    <input matInput type="text" formControlName="name">
+    <mat-form-field appearance="standard">
+        <mat-label>Name</mat-label>
+        <input matInput type="text" matInput formControlName="name" placeholder="Name">
+        <mat-error *ngIf="form.controls.name.dirty && form.controls.name.errors?.['required']">Name required
+        </mat-error>
+    </mat-form-field>
     <button mat-raised-button color="primary" type="submit">Add</button>
 </form>
 
