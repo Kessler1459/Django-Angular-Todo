@@ -44,3 +44,4 @@ testem.log
 .DS_Store
 Thumbs.db
 front/.favorites.json
+api/.env
