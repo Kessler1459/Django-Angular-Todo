@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 import json
+from todo.mailer import sendEmail
 from todo.models import *
 # Create your views here.
 
@@ -24,7 +25,7 @@ def get_csrf(request):
 def create_user_view(request: HttpRequest):
     req = json.loads(request.body)
     new_user = User.objects.create_user(username=req['username'], email=req['email'], password=req['password'])
-    return JsonResponse({'username': new_user.username, 'email': new_user.email}, status=201)
+    return JsonResponse({'id':new_user.id,'username': new_user.username, 'email': new_user.email}, status=201)
 
 # header X-CSRFToken
 
@@ -64,7 +65,7 @@ def get_auth_user_view(request: HttpRequest):
         return JsonResponse({'isAuthenticated': False})
     return JsonResponse({'username': request.user.username, 'email': request.user.email, 'id': request.user.id})
 
-
+@csrf_exempt
 @require_http_methods(['POST'])
 def email_exists_view(request: HttpRequest):
     exists = User.objects.filter(
@@ -141,6 +142,7 @@ def board_guests(request: HttpRequest, id: int):
             if request.user==guest:     #que no se agregue a si mismo
                 return HttpResponseBadRequest()
             board.guests.add(guest)
+            sendEmail('Added as guest in board '+board.name+' by '+board.owner.username,guest_email)
             return JsonResponse({"id": guest.id, "username": guest.username, "email": guest.email}, status=200)
 
 
@@ -259,10 +261,11 @@ def change_note_column(request: HttpRequest, note_id: int):
     else:
         user = request.user
         is_guest = Board.objects.filter(id=note.column.board.id, guests__exact=user).exists()
-        if not is_guest and user.id == note.column.board.owner.id:
+        if not is_guest and user.id != note.column.board.owner.id:
             return HttpResponseForbidden()
         else:
             new_col = json.loads(request.body)['column']
             column: Column = note.column if new_col == note.column.id else Column.objects.filter(id=new_col).first()
             note.column = column
-            return JsonResponse({"Column changed"}, status=200)
+            note.save()
+            return JsonResponse({'column':"Column changed"}, status=200)
