@@ -1,8 +1,9 @@
 import smtplib, ssl
-from .enviroment import MY_ENV_VAR
-sender_email="kessler1459@gmail.com"
+from .enviroment import PASS,EMAIL
+
 port = 465  # For SSL
-password = MY_ENV_VAR
+sender_email=EMAIL
+password = PASS
 
 def sendEmail(message:str,to:str):
 # Create a secure SSL context
