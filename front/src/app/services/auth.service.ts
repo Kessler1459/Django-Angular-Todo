@@ -13,8 +13,12 @@ export class AuthService {
 
     constructor(private http: HttpClient) {
         this.getAuthUser().subscribe(res => {
-            this.user = res;
-            this.isLoggedIn = true
+            if(res instanceof User){
+                this.user = res;
+                this.isLoggedIn = true;
+            }
+            else
+                this.isLoggedIn=false;      
         })
     }
 
@@ -44,7 +48,7 @@ export class AuthService {
     }
 
     getAuthUser() {
-        return this.http.get<User>(this.rootUrl + 'getauthuser')
+        return this.http.get<User|{isAuthenticated:boolean}>(this.rootUrl + 'getauthuser');
     }
 
     signUp(email:string,username:string,password:string){

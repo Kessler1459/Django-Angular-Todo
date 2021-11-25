@@ -11,8 +11,8 @@ import { NoAuthGuard } from './services/no-auth.guard';
 const routes: Routes = [
     { path: "", redirectTo: "boards", pathMatch: "full" },
     { path: "boards", component: DashboardComponent, canActivate: [AuthGuard] },
-    { path: "boards/:boardId", component: BoardComponent },
-    { path: "boards/:boardId/settings", component: SettingsComponent },
+    { path: "boards/:boardId", component: BoardComponent , canActivate: [AuthGuard]},
+    { path: "boards/:boardId/settings", component: SettingsComponent , canActivate: [AuthGuard]},
     { path: "login", component: LoginComponent, canActivate: [NoAuthGuard] },
     { path: "signup", component: SignupComponent, canActivate: [NoAuthGuard] }
 ];
