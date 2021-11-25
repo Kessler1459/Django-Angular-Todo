@@ -76,7 +76,11 @@ export class BoardComponent implements OnInit {
     }
 
     onDeleteColumn(column: Column) {
-        this.boardService.deleteColumn(column.id).subscribe(() => this.board.columns.splice(this.board.categories.indexOf(column), 1));
+       this.boardService.deleteColumn(column.id).subscribe(() => {
+            this.board.columns.forEach((v,i)=>{
+                if(v.id==column.id)  this.board.columns.splice(i,1)
+            })
+        });
     }
 
     onCreateNote(note: Note, columnId: number) {

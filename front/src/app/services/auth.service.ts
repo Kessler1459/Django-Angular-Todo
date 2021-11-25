@@ -13,12 +13,14 @@ export class AuthService {
 
     constructor(private http: HttpClient) {
         this.getAuthUser().subscribe(res => {
-            if(res instanceof User){
+
+            if (res instanceof User) {
                 this.user = res;
                 this.isLoggedIn = true;
             }
-            else
-                this.isLoggedIn=false;      
+            else {
+                this.isLoggedIn = false;
+            }
         })
     }
 
@@ -48,10 +50,18 @@ export class AuthService {
     }
 
     getAuthUser() {
-        return this.http.get<User|{isAuthenticated:boolean}>(this.rootUrl + 'getauthuser');
+        return this.http.get<any>(this.rootUrl + 'getauthuser').pipe(
+            map((res) => {
+                if (res.id) {
+                    return new User(res.id, res.email, res.username);
+                }
+                else
+                    return res
+            }
+            ))
     }
 
-    signUp(email:string,username:string,password:string){
-        return this.http.post(this.rootUrl+'signup', {email,username,password})
+    signUp(email: string, username: string, password: string) {
+        return this.http.post(this.rootUrl + 'signup', { email, username, password })
     }
 }
