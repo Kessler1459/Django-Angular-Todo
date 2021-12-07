@@ -9,6 +9,8 @@ mysqlclient = "*"
 ipython = "*"
 django-cors-headers = "*"
 python-dotenv = "*"
+djangorestframework = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 
