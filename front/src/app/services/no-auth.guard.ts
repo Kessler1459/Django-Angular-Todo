@@ -10,9 +10,7 @@ export class NoAuthGuard implements CanActivate {
     constructor(private authService: AuthService, private router: Router) { }
 
     canActivate() {
-        return this.authService.isloggedIn().pipe(
-            map(res => res ? this.router.parseUrl("") : true)
-        )
+        return this.authService.token ? this.router.parseUrl("") : true
     }
 
 }

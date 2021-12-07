@@ -8,12 +8,5 @@ export class Note {
     creator:User;
     datetime:Date;
     description:string;
-    state:State;
 }
 
-
-export enum State {
-    TD = "To do",
-    IP = "In progress",
-    DN = "Done",
-}

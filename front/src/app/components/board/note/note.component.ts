@@ -2,7 +2,7 @@ import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from 'src/app/models/category';
-import { Note, State } from 'src/app/models/note';
+import { Note } from 'src/app/models/note';
 
 @Component({
     selector: 'app-note',
@@ -45,9 +45,5 @@ export class NoteComponent implements OnInit {
 
     dateFormat(date: Date) {
         return new Date(date)
-    }
-
-    enumAsString(state: State) {
-        return (Object.values(State)[Object.keys(State).indexOf(state)]);
     }
 }
