@@ -15,28 +15,37 @@ from todo.models import *
 from todo.permissions import IsOwner
 from todo.serializers import *
 from todo.validations import ConflictError
+from drf_yasg.utils import swagger_auto_schema
 
 # ------------AUTH-----------------------------------------------------------------------------
 
 class Signup(CreateAPIView):
-    model = User()
+    model = User
     permission_classes = [permissions.AllowAny]
     serializer_class = UserSerializer
+    @swagger_auto_schema(request_body=UserSerializer,security=[])
+    def post(self, request:Request):
+        return super().post(self,request)
+        
 
 class LoginAPIView(APIView):
     permission_classes=[permissions.AllowAny]
     serializer_class=LoginSerializers
+    @swagger_auto_schema(request_body=LoginSerializers,security=[])
     def post(self, request:Request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         update_last_login(None, user)
         token = Token.objects.get_or_create(user=user)
+        login(request,user)
         return Response({"status": status.HTTP_200_OK, "Token": token[0].key})
 
 class Session(APIView):
+    permission_classes=[permissions.AllowAny]
+    @swagger_auto_schema()
     def get(self,request):
-        return Response({'isAuthenticated': True})
+        return Response({'isAuthenticated': request.user.is_authenticated})
 
 class AuthUser(APIView):
     def get(self,request):
@@ -50,6 +59,7 @@ class Logout(APIView):
 
 class Email(APIView):
     permission_classes=[permissions.AllowAny]
+    @swagger_auto_schema(request_body=EmailSerializer,security=[])
     def post(self,request:Request):
         if 'email' not in request.data:
             raise ValidationError({'email':'Email required'})
@@ -65,7 +75,7 @@ class BoardViewSet(GenericViewSet,RetrieveModelMixin,CreateModelMixin,DestroyMod
         else: 
             return super().get_permissions()
     def get_queryset(self):
-        return (Board.objects.filter(owner=self.request.user)|(Board.objects.filter(guests=self.request.user))).distinct()
+        return (Board.objects.filter(owner=self.request.user.id)|(Board.objects.filter(guests=self.request.user.id))).distinct()
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
     

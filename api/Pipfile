@@ -11,6 +11,10 @@ django-cors-headers = "*"
 python-dotenv = "*"
 djangorestframework = "*"
 drf-nested-routers = "*"
+django-rest-swagger = "*"
+coreapi = "*"
+pyyaml = "*"
+drf-yasg = "*"
 
 [dev-packages]
 
