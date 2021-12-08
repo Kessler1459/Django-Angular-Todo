@@ -1,3 +1,4 @@
+from django.contrib.auth import login
 from django.contrib.auth.models import User, update_last_login
 from django.core.validators import EmailValidator
 from rest_framework import  permissions, status
@@ -24,8 +25,9 @@ class Signup(CreateAPIView):
 
 class LoginAPIView(APIView):
     permission_classes=[permissions.AllowAny]
+    serializer_class=LoginSerializers
     def post(self, request:Request):
-        serializer = LoginSerializers(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         update_last_login(None, user)
