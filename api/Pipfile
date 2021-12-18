@@ -13,8 +13,10 @@ djangorestframework = "*"
 drf-nested-routers = "*"
 django-rest-swagger = "*"
 coreapi = "*"
-pyyaml = "*"
+PyYAML = "*"
 drf-yasg = "*"
+coverage = "*"
+tblib = "*"
 
 [dev-packages]
 

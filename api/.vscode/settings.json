@@ -1,0 +1,11 @@
+{
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "todo",
+        "-p",
+        "tests.py"
+    ],
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": false
+}
