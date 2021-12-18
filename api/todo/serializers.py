@@ -7,11 +7,15 @@ from rest_framework.fields import EmailField
 from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueValidator
 from todo.models import Board, Category, Column, Note
+from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
     username =CharField()
     password=serializers.CharField(write_only=True)
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
+    def create(self, validated_data):
+        validated_data['password']=make_password(validated_data['password'])
+        return super().create(validated_data)
     class Meta:
         model=User
         fields=['id','username','email','password']
@@ -20,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializers(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)    
-    def validate(self, data:OrderedDict):
+    def validate(self, data):
         email = data.get('email',None)
         password = data.get('password',None)
         if email and password:

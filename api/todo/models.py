@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 class Board(models.Model):
     name = models.CharField(max_length=20, blank=False)
     owner = models.ForeignKey(User, on_delete=CASCADE, related_name="boards")
-    guests = models.ManyToManyField(User)
+    guests = models.ManyToManyField(User, related_name="guested_boards")
 
     def save(self, *args, **kwargs):
         new = self.pk is None
