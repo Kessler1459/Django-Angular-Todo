@@ -19,10 +19,10 @@ export class DashboardComponent implements OnInit {
     constructor(private authService: AuthService, private boardService: BoardService,private router:Router) { }
 
     ngOnInit(): void {
-        if(this.authService.user){
-            this.boardService.getOwnedBoards(this.authService.user.id).subscribe(boards=>this.yourBoards=boards)
-            this.boardService.getGuestedBoards(this.authService.user.id).subscribe(boards=>this.guestBoards=boards)
-        }           
+        this.authService.getAuthUser().subscribe(user=>{
+            this.boardService.getOwnedBoards(user.id).subscribe(boards=>this.yourBoards=boards)
+            this.boardService.getGuestedBoards(user.id).subscribe(boards=>this.guestBoards=boards)
+        })                           
     }
 
     onSubmitBoard(){

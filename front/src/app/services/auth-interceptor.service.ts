@@ -2,29 +2,27 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpHeaders } fro
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthInterceptorService implements HttpInterceptor {
 
-    constructor(private cookieService: CookieService) { }
+    constructor(private authService: AuthService) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        const csrf = this.cookieService.get('csrftoken');
-        const session = this.cookieService.get('sessionid');
+        const token = this.authService.token;
         let request
-        if (csrf && session) {
+        if (token) {
             request = req.clone({
                 headers: req.headers
-                    .set('X-CSRFToken', csrf),
+                    .set('Authorization', 'Token '+token),
                 withCredentials: true
             });
         }
         else {
-            request = req.clone({
-                withCredentials: true
-            });
+            return next.handle(req);
         }
         return next.handle(request);
     }

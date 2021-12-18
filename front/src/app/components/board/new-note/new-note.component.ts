@@ -11,15 +11,16 @@ import { Note } from 'src/app/models/note';
 })
 export class NewNoteComponent implements OnInit {
     createEmitter = new EventEmitter<Note>();
-    form=new FormGroup({
-        name:new FormControl(""),
-        category:new FormControl(1),
-        description:new FormControl("")
-    })
+    form:FormGroup;
     
     constructor(@Inject(MAT_DIALOG_DATA) public categories:Category[]) { }
 
     ngOnInit(): void {
+        this.form=new FormGroup({
+            name:new FormControl(""),
+            category:new FormControl(this.categories[0]),
+            description:new FormControl("")
+        })
     }
 
     onSubmit(){

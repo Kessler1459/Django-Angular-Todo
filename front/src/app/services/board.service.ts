@@ -20,13 +20,13 @@ export class BoardService {
     }
 
     getOwnedBoards(userId: number) {
-        return this.httpClient.get<Board[]>(this.rootUrl + 'user/' + userId + '/boards').pipe(
+        return this.httpClient.get<Board[]>(this.rootUrl + 'users/' + userId + '/boards').pipe(
             map(list => list ?? [])
         );
     }
 
     getGuestedBoards(guestId: number) {
-        return this.httpClient.get<Board[]>(this.rootUrl + 'boards/guests/' + guestId).pipe(
+        return this.httpClient.get<Board[]>(this.rootUrl + 'users/' + guestId + "/guest-boards").pipe(
             map(list => list ?? [])
         );
     }
@@ -43,24 +43,24 @@ export class BoardService {
         return this.httpClient.post<Column>(`${this.rootUrl}boards/${boardId}/columns`, newCol);
     }
 
-    deleteColumn(columnId: number) {
-        return this.httpClient.delete(this.rootUrl + 'columns/' + columnId);
+    deleteColumn(boardId: number, columnId: number) {
+        return this.httpClient.delete(`${this.rootUrl}boards/${boardId}/columns/${columnId}`);
     }
 
     addNote(note: Note, columnId: number) {
-        return this.httpClient.post<Note>(`${this.rootUrl}columns/${columnId}/notes`, note)
+        return this.httpClient.post<Note>(`${this.rootUrl}columns/${columnId}/notes`, { ...note, category: note.category.id })
     }
 
-    changeNoteColumn(noteId: number, newColumnId: number) {
-        return this.httpClient.put(this.rootUrl + "notes/" + noteId + "/column", { column: newColumnId });
+    changeNoteColumn(noteId: number, oldColumnId: number, newColumnId: number) {
+        return this.httpClient.patch(this.rootUrl + "columns/" + oldColumnId + "/notes/" + noteId, { column: newColumnId })
     }
 
-    editNote(editNote: Note) {
-        return this.httpClient.put(this.rootUrl + 'notes/' + editNote.id, editNote);
+    editNote(editNote: Note, columnId: number) {
+        return this.httpClient.put(this.rootUrl + 'columns/' + columnId + '/notes/' + editNote.id, { ...editNote, category: editNote.category.id });
     }
 
-    deleteNote(noteId: number) {
-        return this.httpClient.delete(this.rootUrl + 'notes/' + noteId);
+    deleteNote(noteId: number, columnId: number) {
+        return this.httpClient.delete(this.rootUrl + 'columns/' + columnId + '/notes/' + noteId);
     }
 
     addCategoryToBoard(boardId: number, newCat: Category) {

@@ -10,9 +10,7 @@ export class AuthGuard implements CanActivate {
     constructor(private authService: AuthService, private router: Router) { }
 
     canActivate() {
-        return this.authService.isloggedIn().pipe(
-            map(res => res ? true : this.router.parseUrl("/login"))
-        )
+        return this.authService.token?true:this.router.parseUrl("/login")
     }
 
 }

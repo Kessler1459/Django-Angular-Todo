@@ -1,47 +1,37 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, tap } from 'rxjs/operators';
+import {  map, switchMap, tap } from 'rxjs/operators';
 import { User } from '../models/user';
+import { CookieService } from 'ngx-cookie';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
     private rootUrl = "http://localhost:8000/api/auth/";
-    isLoggedIn: boolean;
-    user: User;
+    token:string;
+    user: User|null;
 
-    constructor(private http: HttpClient) {
-        this.getAuthUser().subscribe(res => {
-
-            if (res instanceof User) {
-                this.user = res;
-                this.isLoggedIn = true;
-            }
-            else {
-                this.isLoggedIn = false;
-            }
-        })
+    constructor(private http: HttpClient, private cookieService:CookieService) {
+        this.token=this.cookieService.get('token');
     }
 
     login(email: string, password: string) {
-        return this.http.post<User>(this.rootUrl + 'login', { email, password }).pipe(
-            tap((user) => {
-                this.user = user;
-                this.isLoggedIn = true;
-            })
-        )
+        return this.http.post<{Token: string}>(this.rootUrl + 'login', { email, password }).pipe(
+            tap(res=>{
+                this.setToken(res.Token)
+            }),
+            switchMap(()=>this.getAuthUser())
+        ) 
     }
 
     logout() {
         return this.http.post(this.rootUrl + 'logout', "").pipe(
-            tap(() => this.isLoggedIn = false)
-        )
-    }
-
-    isloggedIn() {
-        return this.http.get<{ isAuthenticated: boolean }>(this.rootUrl + 'session').pipe(
-            map(res => res.isAuthenticated)
+            tap(() => {
+                this.token = "";
+                this.cookieService.remove("token");
+                this.user=null;
+            })
         )
     }
 
@@ -50,18 +40,17 @@ export class AuthService {
     }
 
     getAuthUser() {
-        return this.http.get<any>(this.rootUrl + 'getauthuser').pipe(
-            map((res) => {
-                if (res.id) {
-                    return new User(res.id, res.email, res.username);
-                }
-                else
-                    return res
-            }
-            ))
+        return this.http.get<any>(this.rootUrl + 'user').pipe(
+            tap(user=>this.user=user)
+        )
     }
 
     signUp(email: string, username: string, password: string) {
         return this.http.post(this.rootUrl + 'signup', { email, username, password })
+    }
+
+    private setToken(token:string){
+        this.cookieService.put('token',token);
+        this.token=token;
     }
 }

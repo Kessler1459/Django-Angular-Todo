@@ -33,7 +33,8 @@ export class LoginComponent implements OnInit {
     }
 
     whatuser() {
-        return this.authService.isloggedIn().subscribe(is => this.este = is)
+        //return this.authService.token
+       // return this.authService.isloggedIn().subscribe(is => this.este = is)
     }
 
 }

@@ -9,6 +9,14 @@ mysqlclient = "*"
 ipython = "*"
 django-cors-headers = "*"
 python-dotenv = "*"
+djangorestframework = "*"
+drf-nested-routers = "*"
+django-rest-swagger = "*"
+coreapi = "*"
+PyYAML = "*"
+drf-yasg = "*"
+coverage = "*"
+tblib = "*"
 
 [dev-packages]
 

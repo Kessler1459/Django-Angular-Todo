@@ -1,4 +1,4 @@
-<nav *ngIf="authService.isLoggedIn">
+<nav *ngIf="authService.token && authService.user">
     <ul>
         <li class="btn" (click)="logout()">Logout</li>
         <li class="btn" routerLink="/">{{authService.user.username}}</li>

@@ -7,7 +7,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { AddColumnComponent } from './add-column/add-column.component';
 import { Column } from 'src/app/models/column';
 import { NoteComponent } from './note/note.component';
-import { Note, State } from 'src/app/models/note';
+import { Note } from 'src/app/models/note';
 import { NewNoteComponent } from './new-note/new-note.component';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
@@ -38,19 +38,17 @@ export class BoardComponent implements OnInit {
         instance.afterClosed().subscribe(() => subscribe.unsubscribe());                    //desubscribo cuando el dialog cierra
     }
 
-    openNoteDialog(note: Note) {
+    openNoteDialog(note: Note,columnId:number) {
         const dialogConfig = new MatDialogConfig();
         dialogConfig.hasBackdrop = true;
-        dialogConfig.data = { note, categories: this.board.categories };
+        dialogConfig.data = { note, categories: this.board.categories};
         const instance = this.matDialog.open(NoteComponent, dialogConfig);
         const subscribeDelete = instance.componentInstance.deleteNoteEmitter.subscribe(delNote => {
-            this.onDeleteNote(delNote);
+            this.onDeleteNote(delNote,columnId);
             instance.close();
         });
         const subscribeEdit = instance.componentInstance.editNoteEmitter.subscribe(editedNote => {
-            this.onEditNote(editedNote);
-            console.log("a");
-
+            this.onEditNote(editedNote,columnId);
             instance.close();
         })
         instance.afterClosed().subscribe(() => {
@@ -76,7 +74,7 @@ export class BoardComponent implements OnInit {
     }
 
     onDeleteColumn(column: Column) {
-       this.boardService.deleteColumn(column.id).subscribe(() => {
+       this.boardService.deleteColumn(this.board.id,column.id).subscribe(() => {
             this.board.columns.forEach((v,i)=>{
                 if(v.id==column.id)  this.board.columns.splice(i,1)
             })
@@ -87,11 +85,11 @@ export class BoardComponent implements OnInit {
         this.boardService.addNote(note, columnId).subscribe(newNote => this.board.columns.find(col => col.id == columnId)?.notes.push(newNote))
     }
 
-    onDeleteNote(note: Note) {
-        this.boardService.deleteNote(note.id).subscribe(() => {
+    onDeleteNote(note: Note,columnId:number) {
+        this.boardService.deleteNote(note.id,columnId).subscribe(() => {
             for (let column of this.board.columns) {
-                const index = column.notes.indexOf(note);
-                if (index) {
+                const index = column.notes.indexOf(note);               
+                if (index!=-1) {
                     column.notes.splice(index, 1);
                     break;
                 }
@@ -99,8 +97,8 @@ export class BoardComponent implements OnInit {
         })
     }
 
-    onEditNote(editedNote: Note) {
-        this.boardService.editNote(editedNote).subscribe(edited => {
+    onEditNote(editedNote: Note,columnId:number) {
+        this.boardService.editNote(editedNote,columnId).subscribe(edited => {
             for (let column of this.board.columns) {
                 const index = column.notes.findIndex(note => note.id = editedNote.id)
                 if (index) {
@@ -109,10 +107,6 @@ export class BoardComponent implements OnInit {
                 }
             }
         })
-    }
-
-    enumAsString(state: State) {
-        return (Object.values(State)[Object.keys(State).indexOf(state)]);
     }
 
     onDeleteBoard() {
@@ -125,16 +119,16 @@ export class BoardComponent implements OnInit {
         } else {
             const prevCol = this.board.columns.find(col => col.notes == event.previousContainer.data)
             const col = this.board.columns.find(col => col.notes == event.container.data)
-            if (col) {
+            if (col&& prevCol) {
                 const item = prevCol?.notes[event.previousIndex];
                 if (item) {
-                    this.boardService.changeNoteColumn(item.id, col.id).subscribe(res=>console.log(res))
-                    transferArrayItem(
-                        event.previousContainer.data,
-                        event.container.data,
-                        event.previousIndex,
-                        event.currentIndex,
-                    );
+                    this.boardService.changeNoteColumn(item.id,prevCol.id, col.id)
+                        .subscribe(()=>transferArrayItem(
+                            event.previousContainer.data,
+                            event.container.data,
+                            event.previousIndex,
+                            event.currentIndex,
+                        ))
                 }
             }
         }
