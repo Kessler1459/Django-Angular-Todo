@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./api/.env
+    environment:
+      - MYSQL_USER=$${MYSQL_USER}
+      - MYSQL_PASSWORD=$${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=$${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=$${MYSQL_ROOT_PASSWORD}
+      - EMAIL=$${EMAIL}
+      - PASS=$${PASS}
+    volumes:
+      - db:/var/lib/mysql
+      - /tmp/app/mysqld:/var/run/mysqld
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+  backend:
+    build: ./api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - /tmp/app/mysqld:/run/mysqld
+  front:
+    build: ./front
+    ports:
+      - "4200:4200"
+volumes:
+  db:

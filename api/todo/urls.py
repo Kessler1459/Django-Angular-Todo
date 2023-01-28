@@ -6,7 +6,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework_nested.routers import NestedDefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from .views import *
+from .views import (
+    BoardViewSet, ColumnViewSet, CategoryViewSet, GuestViewSet, UserGuestedBoards,
+    NoteViewSet, permissions, Signup, LoginAPIView, Session,
+    AuthUser, Logout, Email, UserBoards
+)
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'boards', BoardViewSet, basename='boards')

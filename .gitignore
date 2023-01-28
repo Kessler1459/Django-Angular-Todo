@@ -45,3 +45,6 @@ testem.log
 Thumbs.db
 front/.favorites.json
 api/.env
+
+
+__pycache__
